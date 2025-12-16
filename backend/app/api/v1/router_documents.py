@@ -19,8 +19,8 @@ async def upload_document(
     db: Session = Depends(get_db),
 ):
     # ---------- FILE SIZE ----------
-    await file.seek(0, 2)
-    size = await file.tell()
+    contents = await file.read()
+    size = len(contents)
     await file.seek(0)
 
     if size > 10 * 1024 * 1024:

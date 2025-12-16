@@ -6,8 +6,26 @@ from app.api.v1.router_chat import router as chat_router
 from app.api.v1.router_misc import router as misc_router
 from slowapi.errors import RateLimitExceeded
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 
-app = FastAPI(title="RAG Chat API", version="1.0.0")
+# Import models and database
+from app.db.base import engine, Base
+from app.models.document import Document
+from app.models.chunk import Chunk
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create database tables on startup
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        conn.commit()
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+app = FastAPI(title="RAG Chat API", version="1.0.0", lifespan=lifespan)
 
 # Middleware
 add_cors_middleware(app)
@@ -20,3 +38,4 @@ app.add_exception_handler(RateLimitExceeded, lambda req, exc: JSONResponse(statu
 app.include_router(misc_router)
 app.include_router(documents_router)
 app.include_router(chat_router)
+
