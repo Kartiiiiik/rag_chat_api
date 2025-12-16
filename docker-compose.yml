@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rag_api
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - rag_network
+
+  db:
+    image: pgvector/pgvector:pg15
+    container_name: rag_db
+    restart: always
+    environment:
+      POSTGRES_DB: rag_db
+      POSTGRES_USER: rag_user
+      POSTGRES_PASSWORD: rag_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rag_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rag_network
+
+volumes:
+  postgres_data:
+
+networks:
+  rag_network:
+    driver: bridge
