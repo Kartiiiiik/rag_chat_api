@@ -44,10 +44,4 @@ USER appuser
 
 EXPOSE 8000
 
-# Run Alembic before starting app
-CMD alembic upgrade head && \
-    gunicorn app.main:app \
-    -k uvicorn.workers.UvicornWorker \
-    --bind 0.0.0.0:8000 \
-    --workers 4 \
-    --timeout 120
+
