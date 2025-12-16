@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Document, SUPPORTED_TYPES, MAX_FILE_SIZE } from '@/types/chat';
-import { parseDocument } from '@/services/documentParser';
+import { uploadDocument as apiUploadDocument } from '@/services/api';
 
 interface UseDocumentUploadReturn {
   document: Document | null;
@@ -19,17 +19,17 @@ export function useDocumentUpload(): UseDocumentUploadReturn {
 
   const validateFile = (file: File): string | null => {
     const fileExtension = file.name.toLowerCase().split('.').pop();
-    const isValidType = Object.keys(SUPPORTED_TYPES).includes(file.type) || 
-                        (fileExtension && ['md', 'txt', 'pdf'].includes(fileExtension));
-    
+    const isValidType = Object.keys(SUPPORTED_TYPES).includes(file.type) ||
+      (fileExtension && ['md', 'txt', 'pdf'].includes(fileExtension));
+
     if (!isValidType) {
       return 'Unsupported file type. Please upload PDF, TXT, or MD files.';
     }
-    
+
     if (file.size > MAX_FILE_SIZE) {
       return 'File size exceeds 10MB limit.';
     }
-    
+
     return null;
   };
 
@@ -44,7 +44,7 @@ export function useDocumentUpload(): UseDocumentUploadReturn {
   const uploadDocument = useCallback(async (file: File) => {
     setError(null);
     const validationError = validateFile(file);
-    
+
     if (validationError) {
       setError(validationError);
       return;
@@ -59,22 +59,22 @@ export function useDocumentUpload(): UseDocumentUploadReturn {
         setUploadProgress(prev => Math.min(prev + 10, 90));
       }, 100);
 
-      const content = await parseDocument(file);
-      
+      const uploadedDoc = await apiUploadDocument(file);
+
       clearInterval(progressInterval);
       setUploadProgress(100);
 
       const newDocument: Document = {
-        id: crypto.randomUUID(),
-        name: file.name,
+        id: String(uploadedDoc.id), // Store as string to satisfy frontend type, converted back in chatService
+        name: uploadedDoc.filename,
         size: file.size,
         type: getFileType(file),
-        content,
-        uploadedAt: new Date(),
+        content: uploadedDoc.content, // Backend extraction
+        uploadedAt: new Date(uploadedDoc.created_at),
       };
 
       setDocument(newDocument);
-      
+
       // Reset progress after a short delay
       setTimeout(() => setUploadProgress(0), 500);
     } catch (err) {
