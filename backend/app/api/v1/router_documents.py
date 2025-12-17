@@ -5,7 +5,15 @@ from app.models.document import Document
 from app.models.chunk import Chunk
 from app.schemas.document import DocumentResponse
 from app.services.document_service import extract_text_from_file, chunk_text, compute_file_hash
-from app.services.gemini_service import get_embedding
+from app.services.SentenceTransformerService import get_embedding_service
+from app.api.v1.utils import (
+    validate_file_size,
+    extract_and_validate_text,
+    check_duplicate_document,
+    create_document_record,
+    validate_chunks,
+    process_and_save_chunks,
+)
 from app.core.limiter import limiter
 from typing import List
 
@@ -19,85 +27,41 @@ async def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
+    """
+    Upload and process a document for RAG system.
+    
+    - Validates file size (max 10MB)
+    - Extracts and validates text content
+    - Checks for duplicates
+    - Creates document record
+    - Chunks text and generates embeddings
+    """
     try:
-        # ---------- FILE SIZE ----------
-        contents = await file.read()
-        size = len(contents)
+        # Validate file size
+        await validate_file_size(file)
         
-        if size > 10 * 1024 * 1024:
-            raise HTTPException(status_code=413, detail="File too large (max 10MB)")
-        
-        # Reset file pointer for text extraction
-        await file.seek(0)
-
-        # ---------- TEXT EXTRACTION ----------
-        text = extract_text_from_file(file)  # Make sure this is async or wrap it
-        if not text or not text.strip():
-            raise HTTPException(status_code=400, detail="Empty or unreadable file")
-
+        # Extract and validate text
+        text = extract_and_validate_text(file)
         file_hash = compute_file_hash(text)
-
-        # Check for duplicate
-        existing_doc = db.query(Document).filter_by(file_hash=file_hash).first()
-        if existing_doc:
-            raise HTTPException(status_code=409, detail="Document already exists")
-
-        # ---------- CREATE DOCUMENT ----------
-        doc = Document(
-            filename=file.filename,
-            content=text,
-            file_hash=file_hash,
-        )
-        db.add(doc)
-        db.commit()
-        db.refresh(doc)
-
-        # ---------- CHUNKING ----------
+        
+        # Check for duplicates
+        check_duplicate_document(db, file_hash)
+        
+        # Create document record
+        doc = create_document_record(db, file.filename, text, file_hash)
+        
+        # Chunk and process
         chunks = chunk_text(text)
-        if not chunks:
-            raise HTTPException(status_code=400, detail="Failed to chunk document")
-
-        chunk_objects = []
-
-        try:
-            # Try to use batch embeddings if available
-            try:
-                from app.services.gemini_service import get_batch_embeddings
-                embeddings = get_batch_embeddings(chunks)
-            except ImportError:
-                # Fallback to individual embeddings
-                embeddings = [get_embedding(chunk) for chunk in chunks]
-
-            for idx, (chunk_content, embedding) in enumerate(zip(chunks, embeddings)):
-                chunk_objects.append(
-                    Chunk(
-                        document_id=doc.id,
-                        content=chunk_content,
-                        embedding=embedding,
-                        chunk_index=idx,
-                    )
-                )
-
-            db.bulk_save_objects(chunk_objects)
-            db.commit()
-            
-        except Exception as e:
-            # Rollback on error
-            db.rollback()
-            db.delete(doc)
-            db.commit()
-            raise HTTPException(
-                status_code=500, 
-                detail=f"Failed to process document chunks: {str(e)}"
-            )
-
+        validate_chunks(chunks)
+        process_and_save_chunks(db, doc, chunks)
+        
         return doc
         
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"Unexpected error: {str(e)}"
         )
 

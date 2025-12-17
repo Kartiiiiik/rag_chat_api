@@ -12,7 +12,6 @@ services:
     networks:
       - rag_network
 
-  # Backend Service (Synced with backend/docker-compose.yml)
   api:
     build:
       context: ./backend
@@ -29,6 +28,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/uploads:/app/uploads
+      - model_cache:/app/model_cache
     networks:
       - rag_network
 
@@ -54,7 +54,7 @@ services:
 
 volumes:
   postgres_data:
-
+  model_cache:
 networks:
   rag_network:
     driver: bridge

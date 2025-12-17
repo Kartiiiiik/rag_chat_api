@@ -2,8 +2,7 @@
 from typing import List, Optional
 
 from app.models.chunk import Chunk
-from app.services.gemini_service import get_embedding
-
+from app.services.SentenceTransformerService import get_embedding_service
 
 def search_similar_chunks(
     db: Session,
@@ -11,7 +10,9 @@ def search_similar_chunks(
     document_ids: Optional[List[int]] = None,
     limit: int = 5,
 ):
-    query_embedding = get_embedding(query, task_type="retrieval_query")
+    # Use local embedding service
+    embedding_service = get_embedding_service()
+    query_embedding = embedding_service.get_embedding(query)
 
     q = db.query(Chunk)
 

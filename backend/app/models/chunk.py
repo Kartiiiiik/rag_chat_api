@@ -12,7 +12,8 @@ class Chunk(Base):
         index=True,
     )
     content = Column(Text, nullable=False)
-    embedding = Column(Vector(768), nullable=False)
+    # all-MiniLM-L6-v2 produces 384 dimensions
+    embedding = Column(Vector(384), nullable=False)
     chunk_index = Column(Integer, nullable=False)
 
     __table_args__ = (

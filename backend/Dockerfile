@@ -51,6 +51,10 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Copy application code
 COPY . .
 
+# Create model cache directory and set permissions
+ENV HF_HOME=/app/model_cache
+RUN mkdir -p $HF_HOME && chown -R appuser:appuser $HF_HOME
+
 # Create non-root user for security
 RUN useradd -m appuser
 USER appuser

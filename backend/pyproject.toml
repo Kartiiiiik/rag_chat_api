@@ -14,9 +14,12 @@ dependencies = [
     "google-generativeai",
     "PyPDF2",
     "python-docx",
+    "python-docx",
     "python-multipart",
     "python-dotenv",
     "tenacity",
+    "sentence-transformers",
+    "torch",
 ]
 
 [dependency-groups]

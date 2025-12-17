@@ -33,17 +33,20 @@ def override_dependencies(mock_db):
     app.dependency_overrides = {}
 
 @pytest.fixture
-def mock_embedding_service(monkeypatch):
-    # Mock the global import
-    monkeypatch.setattr("app.api.v1.router_documents.get_embedding", lambda x: [0.1] * 768)
+    # Mock the embedding service
+    mock_service = MagicMock()
+    # Mocking single embedding
+    mock_service.get_embedding.return_value = [0.1] * 384
+    # Mocking batch embeddings
+    mock_service.get_embeddings.side_effect = lambda texts, **kwargs: [[0.1] * 384] * len(texts)
     
-    # Mock the local import by mocking sys.modules (if needed) or patching the function where it is defined
-    # Since get_batch_embeddings is imported from app.services.gemini_service inside the function,
-    # we can try to patch it in that module if it exists, or just let it fail/pass.
-    # If the module exists, we can patch it there.
-    import app.services.gemini_service
-    if hasattr(app.services.gemini_service, "get_batch_embeddings"):
-        monkeypatch.setattr(app.services.gemini_service, "get_batch_embeddings", lambda x: [[0.1] * 768] * len(x))
+    # Patch get_embedding_service in router_documents
+    monkeypatch.setattr("app.api.v1.router_documents.get_embedding_service", lambda: mock_service)
+    
+    # Also patch in rag_service if it's used there (though this test might only cover upload)
+    monkeypatch.setattr("app.services.rag_service.get_embedding_service", lambda: mock_service)
+    
+    return mock_service
 
 def test_upload_document_success(override_dependencies, mock_embedding_service, mock_db):
     filename = "test_doc.txt"
