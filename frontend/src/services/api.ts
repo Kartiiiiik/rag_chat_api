@@ -62,3 +62,21 @@ export async function chat(
 
     return response.json();
 }
+
+export async function getDocuments(): Promise<DocumentResponse[]> {
+    const response = await fetch(`${API_BASE_URL}/documents/`);
+    if (!response.ok) {
+        throw new Error("Failed to fetch documents");
+    }
+    return response.json();
+}
+
+export async function deleteDocument(id: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/documents/${id}`, {
+        method: "DELETE",
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to delete document");
+    }
+}

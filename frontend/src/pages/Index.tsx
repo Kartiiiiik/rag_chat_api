@@ -47,6 +47,11 @@ const Index = () => {
                 <FileText className="h-4 w-4" />
                 Document
               </h2>
+              <div className="mb-4">
+                  <a href="/documents" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                      View All Documents
+                  </a>
+              </div>
               <DocumentUpload
                 document={document}
                 isUploading={isUploading}

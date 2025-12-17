@@ -23,8 +23,8 @@ ENV PATH="/root/.local/bin:$PATH"
 # Copy project files for uv sync
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies with uv sync (uses lock file)
-RUN uv sync --frozen --no-dev
+# Install dependencies with uv sync (updates lock file if needed, though ephemeral in build)
+RUN uv sync --no-dev
 
 
 # =========================
