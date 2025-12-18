@@ -1,4 +1,10 @@
-export const API_BASE_URL = "/api/v1";
+export const API_BASE_URL = "http://localhost:8000";
+const TOKEN_KEY = 'rag_chat_token';
+
+function getAuthHeader() {
+    const token = localStorage.getItem(TOKEN_KEY);
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
 
 export interface DocumentResponse {
     id: number;
@@ -23,6 +29,9 @@ export async function uploadDocument(file: File): Promise<DocumentResponse> {
 
     const response = await fetch(`${API_BASE_URL}/documents/upload`, {
         method: "POST",
+        headers: {
+            ...getAuthHeader(),
+        },
         body: formData,
     });
 
@@ -39,10 +48,11 @@ export async function chat(
     documentIds: number[],
     stream: boolean = false
 ): Promise<ChatResponse | ReadableStream<Uint8Array>> {
-    const response = await fetch(`${API_BASE_URL}/chat`, {
+    const response = await fetch(`${API_BASE_URL}/chat/`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
+            ...getAuthHeader(),
         },
         body: JSON.stringify({
             message,
@@ -64,7 +74,11 @@ export async function chat(
 }
 
 export async function getDocuments(): Promise<DocumentResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/documents/`);
+    const response = await fetch(`${API_BASE_URL}/documents/`, {
+        headers: {
+            ...getAuthHeader(),
+        }
+    });
     if (!response.ok) {
         throw new Error("Failed to fetch documents");
     }
@@ -74,6 +88,9 @@ export async function getDocuments(): Promise<DocumentResponse[]> {
 export async function deleteDocument(id: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/documents/${id}`, {
         method: "DELETE",
+        headers: {
+            ...getAuthHeader(),
+        }
     });
 
     if (!response.ok) {

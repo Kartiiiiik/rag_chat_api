@@ -21,7 +21,6 @@ export async function generateResponse(
         return response.response;
     } 
     
-    // If stream (not implemented in this simple call yet), handling would be different.
     return "Stream response not fully implemented in this helper yet.";
 
   } catch (error) {

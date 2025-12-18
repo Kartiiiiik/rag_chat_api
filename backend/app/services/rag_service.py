@@ -1,8 +1,8 @@
 ﻿from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from app.models.chunk import Chunk
-from app.services.SentenceTransformerService import get_embedding_service
+from app.models import Chunk
+from app.services import get_embedding_service
 
 def search_similar_chunks(
     db: Session,

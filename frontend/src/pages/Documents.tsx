@@ -52,10 +52,10 @@ const Documents = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-background bg-gradient-to-br from-background via-background to-accent/5">
+        <div className="flex h-screen bg-background overflow-hidden bg-gradient-to-br from-background via-background to-accent/5">
             {/* Sidebar (simplified/reused part of layout) */}
             <aside className="hidden w-80 flex-col border-r border-border bg-card lg:flex">
-                 <div className="flex h-16 items-center gap-3 border-b border-border px-6">
+                <div className="flex h-16 items-center gap-3 border-b border-border px-6">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-bg">
                         <Sparkles className="h-5 w-5 text-primary-foreground" />
                     </div>
@@ -73,7 +73,7 @@ const Documents = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-8">
+            <main className="flex-1 p-8 overflow-auto">
                 <div className="mx-auto max-w-4xl space-y-8">
                     <div className="flex items-center justify-between">
                         <div>

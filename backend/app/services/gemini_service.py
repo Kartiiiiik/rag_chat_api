@@ -39,7 +39,7 @@ def _rate_limit():
 
 @lru_cache
 def get_chat_model():
-    return genai.GenerativeModel("gemini-1.5-flash")
+    return genai.GenerativeModel("gemini-flash-latest")
 
 
 

@@ -20,6 +20,10 @@ dependencies = [
     "tenacity",
     "sentence-transformers",
     "torch",
+    "python-jose[cryptography]",
+    "passlib[bcrypt]",
+    "authlib",
+    "httpx",
 ]
 
 [dependency-groups]

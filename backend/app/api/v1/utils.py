@@ -1,9 +1,8 @@
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from typing import List
-
-from models import Document, Chunk
-from services import get_embedding_service, extract_text_from_file, chunk_text, compute_file_hash
+from app.models import Document, Chunk
+from app.services import get_embedding_service, extract_text_from_file
 
 
 async def validate_file_size(file: UploadFile, max_size_mb: int = 10) -> bytes:

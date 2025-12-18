@@ -5,6 +5,8 @@ from typing import List
 class DocumentResponse(BaseModel):
     id: int
     filename: str
+    content: str
+    file_hash: str
     created_at: datetime
 
     class Config:

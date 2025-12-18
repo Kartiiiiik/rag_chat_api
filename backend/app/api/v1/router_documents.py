@@ -1,11 +1,9 @@
 ﻿from fastapi import APIRouter, UploadFile, File, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 from app.db.dependencies import get_db
-from app.models.document import Document
-from app.models.chunk import Chunk
+from app.models import Document, Chunk
 from app.schemas.document import DocumentResponse
-from app.services.document_service import extract_text_from_file, chunk_text, compute_file_hash
-from app.services.SentenceTransformerService import get_embedding_service
+from app.services import chunk_text, compute_file_hash
 from app.api.v1.utils import (
     validate_file_size,
     extract_and_validate_text,
