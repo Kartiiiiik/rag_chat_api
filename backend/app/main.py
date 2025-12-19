@@ -19,6 +19,7 @@ from app.db.base import engine, Base
 async def lifespan(app: FastAPI):
     # Create database tables on startup
     from sqlalchemy import text
+    import app.models # Ensure all models are registered
     with engine.connect() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         conn.commit()

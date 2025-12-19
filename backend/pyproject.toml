@@ -9,7 +9,7 @@ dependencies = [
     "sqlalchemy",
     "psycopg2-binary",
     "pgvector",
-    "pydantic",
+    "pydantic[email]",
     "slowapi",
     "google-generativeai",
     "PyPDF2",
@@ -24,6 +24,8 @@ dependencies = [
     "passlib[bcrypt]",
     "authlib",
     "httpx",
+    "itsdangerous>=2.2.0",
+    "bcrypt==4.3.0",
 ]
 
 [dependency-groups]
